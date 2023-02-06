@@ -14,7 +14,13 @@ You can download from the releases page to run the program as a `.exe`, or you c
 
 ### Building
 
-Download the repository and open the `sfml-fluid-simulation.sln` file in Visual Studio 2019/2022. Then build and run the project.
+
+
+Download the repository and open the `sfml-fluid-simulation.sln` file in Visual Studio 2019/2022. 
+
+[Setup SFML with your Visual Studio solution.](https://www.youtube.com/watch?v=VWWSc2nqrEA)
+
+Then build and run the project.
 
 ## Controls
 

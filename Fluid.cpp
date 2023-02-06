@@ -3,64 +3,124 @@
 #include "Constants.h"
 #include "Physics.h"
 
-Fluid::Fluid(int diffusion, int viscosity, float dt)
+#include <iostream>
+
+int IX(int x, int y);
+sf::Color Hsv(int hue, float sat, float val, float d);
+float MapToRange(float val, float minIn, float maxIn, float minOut, float maxOut);
+
+Fluid::Fluid(float diffusion, float viscosity, float dt)
 {
-	this->size = size;
 	this->dt = dt;
 	this->diff = diffusion;
 	this->visc = viscosity;
 
-	this->s.reserve(N * N);
+	// create vectors with size N*N filled with 0
+	this->cells.resize(N * N, sf::RectangleShape(sf::Vector2f(SCALE, SCALE)));
 
-	this->density.reserve(N * N);
+	this->s.resize(N * N, 0);
 
-	this->Vx.reserve(N * N);
-	this->Vy.reserve(N * N);
+	this->density.resize(N * N, 0);
 
-	this->Vx0.reserve(N * N);
-	this->Vy0.reserve(N * N);
+	this->Vx.resize(N * N, 0);
+	this->Vy.resize(N * N, 0);
+
+	this->Vx0.resize(N * N, 0);
+	this->Vy0.resize(N * N, 0);
+
+	// set position and size of cells
+	for (int j = 0; j < N; j++)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int x = i * SCALE;
+			int y = j * SCALE;
+
+			int index = IX(i, j);
+			this->cells[index].setPosition(sf::Vector2f(x, y));
+		}
+	}
 }
 
 
 void Fluid::AddDensity(int x, int y, float amount)
 {
-	int index = IX(x, y);
-	this->density[index] += amount;
+	this->density[IX(x, y)] += amount;
 }
 
 void Fluid::AddVelocity(int x, int y, float amountX, float amountY)
 {
-	int N = this->size;
-	int index = IX(x, y);
-
-	this->Vx[index] += amountX;
-	this->Vy[index] += amountY;
+	this->Vx[IX(x, y)] += amountX;
+	this->Vy[IX(x, y)] += amountY;
 }
 
 void Fluid::Step()
 {
-	int N = this->size;
-	float visc = this->visc;
-	float diff = this->diff;
-	float dt = this->dt;
-	std::vector<float> Vx = this->Vx;
-	std::vector<float> Vy = this->Vy;
-	std::vector<float> Vx0 = this->Vx0;
-	std::vector<float> Vy0 = this->Vy0;
-	std::vector<float> s = this->s;
-	std::vector<float> density = this->density;
+	Physics::Diffuse(1, this->Vx0, this->Vx, this->visc, this->dt);
+	Physics::Diffuse(2, this->Vy0, this->Vy, this->visc, this->dt);
 
-	Physics::Diffuse(1, Vx0, Vx, visc, dt);
-	Physics::Diffuse(2, Vy0, Vy, visc, dt);
+	Physics::Project(this->Vx0, this->Vy0, this->Vx, this->Vy);
 
-	Physics::Project(Vx0, Vy0, Vx, Vy);
+	Physics::Advection(1, this->Vx, this->Vx0, this->Vx0, this->Vy0, this->dt);
+	Physics::Advection(2, this->Vy, this->Vy0, this->Vx0, this->Vy0, dt);
 
-	Physics::Advection(1, Vx, Vx0, Vx0, Vy0, dt);
-	Physics::Advection(2, Vy, Vy0, Vx0, Vy0, dt);
+	Physics::Project(this->Vx, this->Vy, this->Vx0, this->Vy0);
 
-	Physics::Project(Vx, Vy, Vx0, Vy0);
-
-	Physics::Diffuse(0, s, density, diff, dt);
-	Physics::Advection(0, density, s, Vx, Vy, dt);
+	Physics::Diffuse(0, this->s, this->density, this->diff, this->dt);
+	Physics::Advection(0, this->density, this->s, this->Vx, this->Vy, this->dt);
 }
 
+void Fluid::RenderDensity(sf::RenderWindow& window)
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			int index = IX(i, j);
+
+			int x = i * SCALE;
+			int y = j * SCALE;
+			float d = this->density[index];
+
+			this->cells[index].setFillColor(Hsv(d, 1, 1, 255));
+
+			window.draw(this->cells[index]);
+		}
+	}
+}
+
+void Fluid::RenderVelocity(sf::RenderWindow& window)
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			int index = IX(i, j);
+			float vx = this->Vx[index];
+			float vy = this->Vy[index];
+
+			int r = MapToRange(vx, -0.05f, 0.05f, 0, 255);
+			int g = MapToRange(vy, -0.05f, 0.05f, 0, 255);
+			this->cells[index].setFillColor(sf::Color(r, g, 255));
+
+			window.draw(this->cells[index]);
+		}
+	}
+}
+
+void Fluid::RenderDefault(sf::RenderWindow& window)
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			int index = IX(i, j);
+
+			float d = std::min(255.f, this->density[index]);
+
+			this->cells[index].setFillColor(sf::Color(255, 255, 255, d));
+
+			window.draw(this->cells[index]);
+		}
+	}
+}

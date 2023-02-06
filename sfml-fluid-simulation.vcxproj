@@ -143,8 +143,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Fluid.cpp" />
+    <ClCompile Include="IX.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapToRange.cpp" />
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="Hsv.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />

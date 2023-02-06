@@ -1,7 +1,9 @@
 #include "Physics.h"
 #include "Constants.h"
 
-void Physics::SetBound(int b, std::vector<float> x)
+int IX(int x, int y);
+
+void Physics::SetBound(int b, std::vector<float>& x)
 {
 	for (int i = 1; i < N - 1; i++)
 	{
@@ -20,10 +22,10 @@ void Physics::SetBound(int b, std::vector<float> x)
 	x[IX(N - 1, N - 1)] = 0.5 * (x[IX(N - 2, N - 1)] + x[IX(N - 1, N - 2)]);
 }
 
-void Physics::LinearSolve(int b, std::vector<float>  x, std::vector<float>  x0, float a, float c)
+void Physics::LinearSolve(int b, std::vector<float>& x, std::vector<float>& x0, float a, float c)
 {
 	float cRecip = 1.0 / c;
-	for (int t = 0; t < iter; t++)
+	for (int t = 0; t < ITER; t++)
 	{
 		for (int j = 1; j < N - 1; j++)
 		{
@@ -36,13 +38,13 @@ void Physics::LinearSolve(int b, std::vector<float>  x, std::vector<float>  x0, 
 	}
 }
 
-void Physics::Diffuse(int b, std::vector<float> x, std::vector<float> x0, float diff, float dt)
+void Physics::Diffuse(int b, std::vector<float>& x, std::vector<float>& x0, float& diff, float dt)
 {
 	float a = dt * diff * (N - 2) * (N - 2);
-	Physics::LinearSolve(b, x, x0, a, 1 + 6 * a);
+	LinearSolve(b, x, x0, a, 1 + 6 * a);
 }
 
-void Physics::Project(std::vector<float> velocX, std::vector<float> velocY, std::vector<float> p, std::vector<float> div)
+void Physics::Project(std::vector<float>& velocX, std::vector<float>& velocY, std::vector<float>& p, std::vector<float>& div)
 {
 	for (int j = 1; j < N - 1; j++)
 	{
@@ -73,7 +75,7 @@ void Physics::Project(std::vector<float> velocX, std::vector<float> velocY, std:
 	Physics::SetBound(2, velocY);
 }
 
-void Physics::Advection(int b, std::vector<float> d, std::vector<float> d0, std::vector<float> velocX, std::vector<float> velocY, float dt)
+void Physics::Advection(int b, std::vector<float>& d, std::vector<float>& d0, std::vector<float>& velocX, std::vector<float>& velocY, float dt)
 {
 	float i0, i1, j0, j1;
 
@@ -133,7 +135,7 @@ void Physics::Advection(int b, std::vector<float> d, std::vector<float> d0, std:
 			int j0i = j0;
 			int j1i = j1;
 
-			d[IX(i, j, k)] =
+			d[IX(i, j)] =
 				s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) +
 				s1 * (t0 * d0[IX(i1i, j0i)] + t1 * d0[IX(i1i, j1i)]);
 		}

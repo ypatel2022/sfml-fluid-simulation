@@ -10,6 +10,10 @@ This project is based on Mike Ash's implementation of the fluid simulation which
 
 ## How to run
 
+You can download from the releases page to run the program as a `.exe`, or you can build the project yourself.
+
+### Building
+
 Download the repository and open the `sfml-fluid-simulation.sln` file in Visual Studio 2019/2022. Then build and run the project.
 
 ## Controls

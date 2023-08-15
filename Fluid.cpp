@@ -16,11 +16,11 @@ Fluid::Fluid(float diffusion, float viscosity, float dt)
 	this->visc = viscosity;
 
 	// create vectors with size N*N filled with 0
-	this->cells.resize(N * N, sf::RectangleShape(sf::Vector2f(SCALE, SCALE)));
+	//this->cells.resize(N * N, sf::RectangleShape(sf::Vector2f(SCALE, SCALE)));
 
 	this->s.resize(N * N, 0);
 
-	this->density.resize(N * N, 0);
+	this->density.resize(N * N, 5);
 
 	this->Vx.resize(N * N, 0);
 	this->Vy.resize(N * N, 0);
@@ -28,18 +28,39 @@ Fluid::Fluid(float diffusion, float viscosity, float dt)
 	this->Vx0.resize(N * N, 0);
 	this->Vy0.resize(N * N, 0);
 
-	// set position and size of cells
-	for (int j = 0; j < N; j++)
+
+	sf::VertexArray cellVertexArray(sf::Quads);
+
+	// create particles
+	for (int i = 0; i < N; i++)
 	{
-		for (int i = 0; i < N; i++)
+		for (int j = 0; j < N; j++)
 		{
 			int x = i * SCALE;
 			int y = j * SCALE;
 
+			float s = SCALE / 2.0f;
+
+			sf::Vertex v1(sf::Vector2f(x - s, y - s));
+			sf::Vertex v2(sf::Vector2f(x - s, y + s));
+			sf::Vertex v3(sf::Vector2f(x + s, y + s));
+			sf::Vertex v4(sf::Vector2f(x + s, y - s));
+
+			// random colors
+			v1.color = v2.color = v3.color = v4.color = sf::Color::White;
+
+			// add to vertex array
+			cellVertexArray.append(v1);
+			cellVertexArray.append(v2);
+			cellVertexArray.append(v3);
+			cellVertexArray.append(v4);
+
 			int index = IX(i, j);
-			this->cells[index].setPosition(sf::Vector2f(x, y));
 		}
 	}
+
+	// set vertex array
+	this->vertexArray = cellVertexArray;
 }
 
 
@@ -78,15 +99,19 @@ void Fluid::RenderDensity(sf::RenderWindow& window)
 		{
 			int index = IX(i, j);
 
-			int x = i * SCALE;
-			int y = j * SCALE;
 			float d = this->density[index];
 
-			this->cells[index].setFillColor(Hsv(d, 1, 1, 255));
+			sf::Color newColor = Hsv(d, 1, 1, 255);
 
-			window.draw(this->cells[index]);
+			// update vertex colors
+			vertexArray[index * 4].color = newColor;
+			vertexArray[index * 4 + 1].color = newColor;
+			vertexArray[index * 4 + 2].color = newColor;
+			vertexArray[index * 4 + 3].color = newColor;
 		}
 	}
+
+	window.draw(this->vertexArray);
 }
 
 void Fluid::RenderVelocity(sf::RenderWindow& window)
@@ -98,14 +123,20 @@ void Fluid::RenderVelocity(sf::RenderWindow& window)
 			int index = IX(i, j);
 			float vx = this->Vx[index];
 			float vy = this->Vy[index];
-
 			int r = MapToRange(vx, -0.05f, 0.05f, 0, 255);
 			int g = MapToRange(vy, -0.05f, 0.05f, 0, 255);
-			this->cells[index].setFillColor(sf::Color(r, g, 255));
 
-			window.draw(this->cells[index]);
+			sf::Color newColor = sf::Color(r, g, 255);
+
+			// update vertex colors
+			vertexArray[index * 4].color = newColor;
+			vertexArray[index * 4 + 1].color = newColor;
+			vertexArray[index * 4 + 2].color = newColor;
+			vertexArray[index * 4 + 3].color = newColor;
 		}
 	}
+
+	window.draw(this->vertexArray);
 }
 
 void Fluid::RenderDefault(sf::RenderWindow& window)
@@ -118,9 +149,15 @@ void Fluid::RenderDefault(sf::RenderWindow& window)
 
 			float d = std::min(255.f, this->density[index]);
 
-			this->cells[index].setFillColor(sf::Color(255, 255, 255, d));
+			sf::Color newColor = sf::Color(255, 255, 255, d);
 
-			window.draw(this->cells[index]);
+			// update vertex colors
+			vertexArray[index * 4].color = newColor;
+			vertexArray[index * 4 + 1].color = newColor;
+			vertexArray[index * 4 + 2].color = newColor;
+			vertexArray[index * 4 + 3].color = newColor;
 		}
 	}
+
+	window.draw(this->vertexArray);
 }

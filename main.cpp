@@ -16,6 +16,13 @@ float RandomFloat(float a, float b)
 	return a + r;
 }
 
+float Clamp(float x, float min, float max)
+{
+	if (x < min) return min;
+	if (x > max) return max;
+	return x;
+}
+
 int main()
 {
 	srand(time(NULL));
@@ -31,6 +38,13 @@ int main()
 
 	// cycle through render modes
 	int n = 0;
+
+	// for random velocity vector
+	int cx = 0.5 * N;
+	int cy = 0.5 * N;
+	float r = 3;
+	float vx = RandomFloat(-r, r);
+	float vy = RandomFloat(-r, r);
 
 	// while the window is kept open
 	while (window.isOpen())
@@ -66,20 +80,18 @@ int main()
 		// clear frame
 		window.clear(BACKGROUND_COLOR);
 
-		int cx = 0.5 * N;
-		int cy = 0.5 * N;
+
 		for (int i = -1; i <= 1; i++)
 		{
 			for (int j = -1; j <= 1; j++)
 			{
-				fluid.AddDensity(cx + i, cy + j, RandomFloat(5, 15));
+				fluid.AddDensity(cx + i, cy + j, RandomFloat(25, 100));
 			}
 		}
 
 		// generate a random velocity vector
-		float r = 30;
-		float vx = RandomFloat(-r, r);
-		float vy = RandomFloat(-r, r);
+		//vx += Clamp(RandomFloat(-r, r), -r, r);
+		//vy += Clamp(RandomFloat(-r, r), -r, r);
 		fluid.AddVelocity(cx, cy, vx, vy);
 
 		fluid.Step();

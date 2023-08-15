@@ -8,8 +8,6 @@ struct Fluid
 	float diff;
 	float visc;
 
-	std::vector<sf::RectangleShape> cells;
-
 	std::vector<float> s;
 	std::vector<float> density;
 
@@ -18,6 +16,8 @@ struct Fluid
 
 	std::vector<float> Vx0;
 	std::vector<float> Vy0;
+
+	sf::VertexArray vertexArray;
 
 	/// <summary>
 	/// Constructor for the Fluid class.
